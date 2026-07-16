@@ -1,0 +1,19 @@
+## Carpetas de Compilación e Intermedios (Requisito Obligatorio)
+[Bb]in/
+[Oo]bj/
+
+## Archivos y Carpetas de Entorno de Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.vshost.exe
+*.vshost.exe.config
+
+## Archivos temporales de Base de Datos LocalDB
+*.mdf
+*.ldf
+
+## Archivos del Sistema Operativo
+Thumbs.db
+.DS_Store

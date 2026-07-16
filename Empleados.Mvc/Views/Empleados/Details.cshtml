@@ -1,0 +1,107 @@
+﻿@model Empleados.Data.Entities.Empleado
+
+@{
+    ViewData["Title"] = "Detalle del Empleado";
+}
+
+<div class="container mt-4" style="max-width: 850px;">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white py-3">
+            <h4 class="mb-0 fw-bold"><i class="bi bi-eye-fill me-2"></i>Expediente del Empleado</h4>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <!-- Columna de la Fotografía -->
+                <div class="col-md-4 text-center border-end mb-3 mb-md-0">
+                    <img src="@(string.IsNullOrEmpty(Model.FotoRuta)
+                                                          ? "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                                                          : Url.Content("~/" + Model.FotoRuta.Replace("\\", "/")))"
+                         alt="Foto de @Model.Nombre"
+                         class="img-thumbnail rounded-circle mb-3 shadow-sm"
+                         style="width: 150px; height: 150px; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png';" />
+
+                    <h5 class="fw-bold mb-1 text-dark">@Model.Nombre @Model.Apellido</h5>
+                    <p class="text-muted small">ID: #@Model.Id</p>
+
+                    <div class="mt-2">
+                        @if ((int)Model.Estado == 1)
+                        {
+                            <span class="badge bg-success px-3 py-2 rounded-pill">Activo</span>
+                        }
+                        else if ((int)Model.Estado == 2)
+                        {
+                            <span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Inactivo</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger px-3 py-2 rounded-pill">Despedido</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Columna de Datos Técnicos y Personales -->
+                <div class="col-md-8 ps-md-4">
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 fw-bold small text-uppercase">Información Laboral</h5>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Puesto o Cargo</span>
+                            <strong class="text-dark">@Model.Puesto</strong>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Departamento</span>
+                            <strong class="text-dark">@(Model.Departamento != null ? Model.Departamento.Nombre : "No Asignado")</strong>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Salario Mensual</span>
+                            <strong class="text-success">RD$ @Model.Salario.ToString("N2")</strong>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Fecha de Contratación</span>
+                            <strong class="text-dark">@Model.FechaContratacion.ToString("dd/MM/yyyy")</strong>
+                        </div>
+                    </div>
+
+                    @if (Model.FechaTerminacion.HasValue)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <span class="text-danger small d-block">Fecha de Terminación (Despido)</span>
+                                <strong class="text-danger">@Model.FechaTerminacion.Value.ToString("dd/MM/yyyy hh:mm tt")</strong>
+                            </div>
+                        </div>
+                    }
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 fw-bold small text-uppercase mt-4">Datos de Contacto y Residencia</h5>
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Correo Electrónico</span>
+                            <span class="text-dark">@Model.CorreoElectronico</span>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-muted small d-block">Teléfono</span>
+                            <span class="text-dark">@Model.Telefono</span>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <span class="text-muted small d-block">Dirección Residencial</span>
+                            <span class="text-dark">@Model.Direccion</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón de Regreso -->
+            <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                <a asp-action="Index" class="btn btn-secondary px-4">
+                    <i class="bi bi-arrow-left me-2"></i>Volver al Listado
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

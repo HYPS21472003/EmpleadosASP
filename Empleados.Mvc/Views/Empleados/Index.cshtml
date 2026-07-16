@@ -1,0 +1,206 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model Empleados.Mvc.Models.PagedResultViewModel<Empleados.Mvc.Models.EmpleadoResumenViewModel>
+
+@{
+    ViewData["Title"] = "Listado de Empleados";
+
+    // Obtener la URL base del servidor para renderizar las imágenes físicas de la API
+    var config = Context.RequestServices.GetService<IConfiguration>();
+    var apiServerUrl = config?["ApiSettings:BaseServerUrl"] ?? "https://localhost:7158/";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="text-dark fw-bold">Panel de Control de Empleados</h2>
+            <p class="text-muted mb-0">Visualiza, filtra y administra la nómina de la empresa.</p>
+        </div>
+        <!-- [MODIFICADO]: RRHH y Admin pueden registrar nuevos empleados -->
+        <a asp-controller="Empleados" asp-action="Create" class="btn btn-primary d-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill"></i> Registrar Nuevo Empleado
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Error del Servidor:</strong> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small fw-bold">Filtrar por Nombre</label>
+                    <input type="text" name="nombre" class="form-control" value="@ViewBag.NombreActual" placeholder="Ej. Juan" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-secondary small fw-bold">Filtrar por Apellido</label>
+                    <input type="text" name="apellido" class="form-control" value="@ViewBag.ApellidoActual" placeholder="Ej. Pérez" />
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-dark w-100">
+                        Buscar
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Empleado</th>
+                            <th>Puesto</th>
+                            <th>Departamento</th>
+                            <th>Salario</th>
+                            <th>Contratación</th>
+                            <th>Estado</th>
+                            <th class="text-center pe-4">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Items.Any())
+                        {
+                            @foreach (var emp in Model.Items)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img src="@(string.IsNullOrEmpty(emp.FotoRuta)
+                                                                                                                  ? "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+                                                                                                                  : Url.Content("~/uploads/empleados/" + System.IO.Path.GetFileName(emp.FotoRuta.Replace("\\", "/"))))"
+                                         alt="Foto"
+                                         class="rounded-circle border shadow-sm"
+                                         style="width: 45px; height: 45px; object-fit: cover;"
+                                         onerror="this.onerror=null; this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png';" />
+                                    <div>
+                                        <div class="fw-bold text-dark">@emp.NombreCompleto</div>
+                                        <span class="text-muted small">ID: #@emp.Id</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@emp.Puesto</td>
+                            <td>
+                                <span class="badge bg-secondary py-1.5">@emp.DepartamentoNombre</span>
+                            </td>
+                            <td class="fw-bold text-success">
+                                RD$ @emp.Salario.ToString("N2")
+                            </td>
+                            <td>@emp.FechaContratacion.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                @if (emp.Estado == "Activo")
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1.5 rounded-pill">Activo</span>
+                                        }
+                                        else if (emp.Estado == "Inactivo")
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1.5 rounded-pill">Inactivo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1.5 rounded-pill">Despedido</span>
+                                        }
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <!-- Consulta de detalles permitida para ambos roles -->
+                                            <a asp-action="Details" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-info" title="Ver Detalles">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+
+                                            <!-- [MODIFICADO]: RRHH y Admin pueden Editar expedientes activos o inactivos -->
+                                            @if (emp.Estado == "Despedido")
+                                            {
+                                                <button class="btn btn-sm btn-outline-secondary" disabled title="Inmutable por Despido">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                            }
+
+                                            <!-- [REQUISITO ROLES]: Las acciones de eliminación lógica (Despedir/Desactivar) quedan exclusivas para Admin -->
+                                            @if (User.IsInRole("Admin") && emp.Estado != "Despedido")
+                                            {
+                                                @if (emp.Estado == "Activo")
+                                                {
+                                                    <a asp-action="Desactivar" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-warning" title="Desactivar Empleado" onclick="return confirm('¿Seguro que desea cambiar el estado a Inactivo?');">
+                                                        <i class="bi bi-person-dash-fill"></i>
+                                                    </a>
+                                                }
+                                                else if (emp.Estado == "Inactivo")
+                                                {
+                                                    <a asp-action="Reactivar" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-success" title="Reactivar Empleado" onclick="return confirm('¿Seguro que desea reactivar este empleado al servicio activo?');">
+                                                        <i class="bi bi-person-check-fill"></i>
+                                                    </a>
+                                                }
+
+                                                <a asp-action="Despedir" asp-route-id="@emp.Id" class="btn btn-sm btn-outline-danger" title="Despedir del Sistema" onclick="return confirm('ATENCIÓN: ¿Seguro que desea registrar el despido de este empleado? Esta operación es irreversible.');">
+                                                    <i class="bi bi-person-x-fill"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-people fs-2"></i>
+                                    <p class="mt-2 mb-0">No se encontraron empleados registrados en el sistema.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.TotalCount > 0)
+    {
+        var totalPages = (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+        <div class="d-flex justify-content-between align-items-center mt-3 px-2">
+            <span class="text-secondary small">
+                Mostrando página <strong>@Model.Page</strong> de <strong>@totalPages</strong> (Total de @Model.TotalCount registros)
+            </span>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.Page - 1, nombre = ViewBag.NombreActual, apellido = ViewBag.ApellidoActual })">Anterior</a>
+                    </li>
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(Model.Page == i ? "active" : "")">
+                            <a class="page-link" href="@Url.Action("Index", new { page = i, nombre = ViewBag.NombreActual, apellido = ViewBag.ApellidoActual })">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.Page == totalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.Page + 1, nombre = ViewBag.NombreActual, apellido = ViewBag.ApellidoActual })">Siguiente</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
